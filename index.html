@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>东阳虎峰禅寺项目布局思路沟通</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #1a1a1a; color: #fff; overflow: hidden; height: 100vh; }
+.viewer { display: flex; flex-direction: column; height: 100vh; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: #2a2a2a; border-bottom: 1px solid #444; flex-shrink: 0; }
+.top-bar .title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-bar .page-info { font-size: 13px; color: #aaa; white-space: nowrap; }
+.top-bar .controls { display: flex; gap: 8px; align-items: center; }
+.top-bar button { background: #444; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.top-bar button:hover { background: #555; }
+.top-bar .thumb-toggle { background: #3a6ea5; }
+.top-bar .thumb-toggle:hover { background: #4a7eb5; }
+.slide-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #1a1a1a; position: relative; overflow: hidden; }
+.slide-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: opacity 0.3s ease; cursor: pointer; }
+.nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: #fff; border: none; width: 50px; height: 80px; font-size: 28px; cursor: pointer; z-index: 10; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+.nav-arrow:hover { background: rgba(0,0,0,0.8); }
+.nav-prev { left: 10px; border-radius: 0 6px 6px 0; }
+.nav-next { right: 10px; border-radius: 6px 0 0 6px; }
+.nav-arrow:disabled { opacity: 0.3; cursor: default; }
+.thumb-panel { position: fixed; top: 0; right: -360px; width: 340px; height: 100vh; background: #2a2a2a; border-left: 1px solid #444; z-index: 100; transition: right 0.3s ease; overflow-y: auto; padding: 16px; }
+.thumb-panel.open { right: 0; }
+.thumb-panel h3 { font-size: 14px; margin-bottom: 12px; color: #ccc; }
+.thumb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.thumb-item { cursor: pointer; border: 2px solid transparent; border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; aspect-ratio: 1.4; }
+.thumb-item:hover { border-color: #6a8fc0; }
+.thumb-item.active { border-color: #4a9eff; }
+.thumb-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-item .thumb-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 3px 6px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; display: none; }
+.overlay.show { display: block; }
+.progress { height: 3px; background: #333; flex-shrink: 0; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #4a9eff, #6a8fc0); transition: width 0.3s ease; }
+.loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #888; font-size: 16px; }
+.fullscreen-btn { background: none; border: 1px solid #555; color: #aaa; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+.fullscreen-btn:hover { background: #444; color: #fff; }
+@media (max-width: 768px) {
+    .thumb-panel { width: 280px; right: -300px; }
+    .nav-arrow { width: 36px; height: 60px; font-size: 20px; }
+    .top-bar .title { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="viewer">
+    <div class="top-bar">
+        <div class="title">🏛️ 东阳虎峰禅寺项目布局思路沟通</div>
+        <div class="controls">
+            <span class="page-info" id="pageInfo">1 / 47</span>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ 全屏</button>
+            <button class="thumb-toggle" id="thumbToggle" onclick="toggleThumb()">☰ 目录</button>
+        </div>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <div class="slide-area" id="slideArea">
+        <div class="loading" id="loading">加载中...</div>
+        <img id="slideImg" src="" alt="幻灯片" style="display:none">
+        <button class="nav-arrow nav-prev" id="prevBtn" onclick="prevPage()">&#8249;</button>
+        <button class="nav-arrow nav-next" id="nextBtn" onclick="nextPage()">&#8250;</button>
+    </div>
+</div>
+<div class="overlay" id="overlay" onclick="toggleThumb()"></div>
+<div class="thumb-panel" id="thumbPanel">
+    <h3>📑 页面目录</h3>
+    <div class="thumb-grid" id="thumbGrid">
+        <div class="thumb-section">📌 封面</div>
+        <div class="thumb-item" id="thumb_1" onclick="goToPage(1)">
+            <img src="pages/page_01.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">1. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 项目分析</div>
+        <div class="thumb-item" id="thumb_2" onclick="goToPage(2)">
+            <img src="pages/page_02.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">2. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 区位与历史沿革 (3-11)</div>
+        <div class="thumb-item" id="thumb_3" onclick="goToPage(3)">
+            <img src="pages/page_03.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">3. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_4" onclick="goToPage(4)">
+            <img src="pages/page_04.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">4. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_5" onclick="goToPage(5)">
+            <img src="pages/page_05.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">5. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_6" onclick="goToPage(6)">
+            <img src="pages/page_06.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">6. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_7" onclick="goToPage(7)">
+            <img src="pages/page_07.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">7. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_8" onclick="goToPage(8)">
+            <img src="pages/page_08.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">8. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_9" onclick="goToPage(9)">
+            <img src="pages/page_09.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">9. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_10" onclick="goToPage(10)">
+            <img src="pages/page_10.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">10. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_11" onclick="goToPage(11)">
+            <img src="pages/page_11.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">11. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 现状分析 (12-19)</div>
+        <div class="thumb-item" id="thumb_12" onclick="goToPage(12)">
+            <img src="pages/page_12.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">12. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_13" onclick="goToPage(13)">
+            <img src="pages/page_13.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">13. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_14" onclick="goToPage(14)">
+            <img src="pages/page_14.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">14. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_15" onclick="goToPage(15)">
+            <img src="pages/page_15.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">15. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_16" onclick="goToPage(16)">
+            <img src="pages/page_16.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">16. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_17" onclick="goToPage(17)">
+            <img src="pages/page_17.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">17. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_18" onclick="goToPage(18)">
+            <img src="pages/page_18.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">18. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_19" onclick="goToPage(19)">
+            <img src="pages/page_19.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">19. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 规划布局方案 (20-32)</div>
+        <div class="thumb-item" id="thumb_20" onclick="goToPage(20)">
+            <img src="pages/page_20.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">20. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_21" onclick="goToPage(21)">
+            <img src="pages/page_21.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">21. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_22" onclick="goToPage(22)">
+            <img src="pages/page_22.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">22. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_23" onclick="goToPage(23)">
+            <img src="pages/page_23.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">23. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_24" onclick="goToPage(24)">
+            <img src="pages/page_24.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">24. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_25" onclick="goToPage(25)">
+            <img src="pages/page_25.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">25. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_26" onclick="goToPage(26)">
+            <img src="pages/page_26.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">26. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_27" onclick="goToPage(27)">
+            <img src="pages/page_27.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">27. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_28" onclick="goToPage(28)">
+            <img src="pages/page_28.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">28. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_29" onclick="goToPage(29)">
+            <img src="pages/page_29.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">29. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_30" onclick="goToPage(30)">
+            <img src="pages/page_30.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">30. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_31" onclick="goToPage(31)">
+            <img src="pages/page_31.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">31. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_32" onclick="goToPage(32)">
+            <img src="pages/page_32.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">32. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 建筑方案设计 (33-42)</div>
+        <div class="thumb-item" id="thumb_33" onclick="goToPage(33)">
+            <img src="pages/page_33.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">33. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_34" onclick="goToPage(34)">
+            <img src="pages/page_34.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">34. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_35" onclick="goToPage(35)">
+            <img src="pages/page_35.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">35. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_36" onclick="goToPage(36)">
+            <img src="pages/page_36.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">36. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_37" onclick="goToPage(37)">
+            <img src="pages/page_37.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">37. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_38" onclick="goToPage(38)">
+            <img src="pages/page_38.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">38. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_39" onclick="goToPage(39)">
+            <img src="pages/page_39.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">39. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_40" onclick="goToPage(40)">
+            <img src="pages/page_40.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">40. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_41" onclick="goToPage(41)">
+            <img src="pages/page_41.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">41. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_42" onclick="goToPage(42)">
+            <img src="pages/page_42.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">42. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-section">📌 总结与下一步 (43-47)</div>
+        <div class="thumb-item" id="thumb_43" onclick="goToPage(43)">
+            <img src="pages/page_43.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">43. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_44" onclick="goToPage(44)">
+            <img src="pages/page_44.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">44. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_45" onclick="goToPage(45)">
+            <img src="pages/page_45.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">45. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_46" onclick="goToPage(46)">
+            <img src="pages/page_46.jpg" alt="虎峰禅寺项目布局思路沟通" loading="lazy">
+            <div class="thumb-label">46. 虎峰禅寺项目布局思路沟通</div>
+        </div>
+        <div class="thumb-item" id="thumb_47" onclick="goToPage(47)">
+            <img src="pages/page_47.jpg" alt="第47页" loading="lazy">
+            <div class="thumb-label">47. 第47页</div>
+        </div>
+    </div>
+</div>
+<script>
+const total = 47;
+let current = 1;
+const img = document.getElementById('slideImg');
+const loading = document.getElementById('loading');
+
+function loadPage(n) {
+    if (n < 1 || n > total) return;
+    current = n;
+    img.style.display = 'none';
+    loading.style.display = 'block';
+    img.src = 'pages/page_' + String(n).padStart(2, '0') + '.jpg';
+    img.onload = function() {
+        loading.style.display = 'none';
+        img.style.display = 'block';
+    };
+    document.getElementById('pageInfo').textContent = n + ' / ' + total;
+    document.getElementById('progressBar').style.width = ((n - 1) / (total - 1) * 100) + '%';
+    document.getElementById('prevBtn').disabled = (n === 1);
+    document.getElementById('nextBtn').disabled = (n === total);
+    document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
+    const activeThumb = document.getElementById('thumb_' + n);
+    if (activeThumb) { activeThumb.classList.add('active'); activeThumb.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+function prevPage() { if (current > 1) loadPage(current - 1); }
+function nextPage() { if (current < total) loadPage(current + 1); }
+function goToPage(n) { loadPage(n); toggleThumb(); }
+function toggleThumb() {
+    const panel = document.getElementById('thumbPanel');
+    const overlay = document.getElementById('overlay');
+    const isOpen = panel.classList.toggle('open');
+    overlay.classList.toggle('show', isOpen);
+    document.getElementById('thumbToggle').textContent = isOpen ? '✕ 关闭' : '☰ 目录';
+}
+function toggleFullscreen() {
+    if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
+    else { document.exitFullscreen().catch(() => {}); }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevPage(); }
+    else if (e.key === 'Home') { e.preventDefault(); loadPage(1); }
+    else if (e.key === 'End') { e.preventDefault(); loadPage(total); }
+    else if (e.key === 't' || e.key === 'T') { toggleThumb(); }
+    else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+});
+const slideArea = document.getElementById('slideArea');
+let touchStartX = 0;
+slideArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+slideArea.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { if (diff > 0) nextPage(); else prevPage(); }
+});
+slideArea.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'IMG' && e.target !== loading) return;
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (x < rect.width * 0.3) prevPage();
+    else if (x > rect.width * 0.7) nextPage();
+});
+loadPage(1);
+</script>
+</body>
+</html>
